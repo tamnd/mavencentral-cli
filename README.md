@@ -26,10 +26,15 @@ docker run --rm ghcr.io/tamnd/mavencentral:latest --help
 ## Usage
 
 ```bash
-mavencentral page <path>                      # fetch one page as a record
-mavencentral page <path> -o json              # as JSON, ready for jq
-mavencentral page <path> --template '{{.Body}}'  # just the readable body text
-mavencentral links <path>                     # the pages it links to, one per line
+# Search for artifacts by keyword
+mavencentral search spring-core
+mavencentral search guava -o json
+mavencentral search log4j -n 5
+
+# List all versions of a specific artifact
+mavencentral versions com.google.guava guava
+mavencentral versions org.springframework spring-core -n 10 -o json
+
 mavencentral --help                           # the whole command tree
 ```
 
@@ -38,11 +43,6 @@ Every command shares one output contract:
 `--template` for a custom line, and `-n` to limit. The default adapts to where
 output goes (a color-aware table on a terminal, JSONL in a pipe), so the same
 command reads well by hand and parses cleanly downstream.
-
-This is a fresh scaffold. It ships one example resource type, `page`, wired end
-to end. Model the real mavencentral records in `mavencentral/` and declare their
-operations in `mavencentral/domain.go`; each one becomes a command, an HTTP
-route, and an MCP tool at once.
 
 ## Serve it
 
@@ -67,10 +67,8 @@ Then [ant](https://github.com/tamnd/ant) (or any program that links the package)
 dereferences `mavencentral://` URIs without knowing anything about mavencentral:
 
 ```bash
-ant get mavencentral://page/<path>   # fetch the record
-ant cat mavencentral://page/<path>   # just the body text
-ant ls  mavencentral://page/<path>   # the pages it links to, each addressable
-ant url mavencentral://page/<path>   # the live https URL
+ant get mavencentral://artifact/com.google.guava:guava   # resolve the URL
+ant url mavencentral://artifact/com.google.guava:guava   # the live https URL
 ```
 
 ## Development
